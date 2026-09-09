@@ -134,6 +134,19 @@ function findProject(projects, arg) {
   return projects.find((p) => p.name.toLowerCase() === target) || null
 }
 
+// Static documents (transcript, etc.) that `cd` can open alongside projects.
+// They live in `public/`, so the URL is the deploy base plus the file name.
+function findDocument(arg) {
+  if (!arg) return null
+  const target = arg.replace(/\/$/, '').toLowerCase()
+  const entry = Object.entries(config.documents || {}).find(
+    ([name]) => name.toLowerCase() === target,
+  )
+  if (!entry) return null
+  const [name, file] = entry
+  return { name, url: `${import.meta.env.BASE_URL}${file}` }
+}
+
 function CommandOutput({ cmd, projects }) {
   const [name, ...rest] = cmd.split(/\s+/)
   const arg = rest.join(' ')
@@ -142,17 +155,30 @@ function CommandOutput({ cmd, projects }) {
     return (
       <div className="term-out">
         Available commands:{'\n'}
-        {'  '}whoami     — about me{'\n'}
-        {'  '}ls         — list my GitHub projects{'\n'}
-        {'  '}cd &lt;name&gt;  — open a project in a new tab{'\n'}
-        {'  '}clear      — clear the terminal{'\n'}
-        {'  '}help       — show this message
+        {'  '}whoami        — about me{'\n'}
+        {'  '}ls            — list my GitHub projects{'\n'}
+        {'  '}cd &lt;name&gt;     — open a project in a new tab{'\n'}
+        {'  '}cd transcript — open my unofficial transcript{'\n'}
+        {'  '}clear         — clear the terminal{'\n'}
+        {'  '}help          — show this message
       </div>
     )
   }
 
   if (name === 'cd') {
     if (!arg) return <div className="term-out term-err">cd: missing operand</div>
+    const doc = findDocument(arg)
+    if (doc) {
+      return (
+        <div className="term-out">
+          opening{' '}
+          <a className="term-link" href={doc.url} target="_blank" rel="noreferrer">
+            {doc.name}
+          </a>{' '}
+          …
+        </div>
+      )
+    }
     if (projects === null) return <div className="term-out">fetching projects…</div>
     const project = findProject(projects, arg)
     if (!project) {
@@ -207,6 +233,20 @@ function CommandOutput({ cmd, projects }) {
             {p.name}/
           </a>
         ))}
+        {Object.keys(config.documents || {}).map((docName) => {
+          const doc = findDocument(docName)
+          return (
+            <a
+              key={doc.name}
+              className="term-link"
+              href={doc.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {doc.name}
+            </a>
+          )
+        })}
       </div>
     )
   }
@@ -240,9 +280,12 @@ function HomePage() {
     }
     const [name, ...rest] = cmd.split(/\s+/)
     if (name === 'cd') {
-      const project = findProject(projects, rest.join(' '))
-      if (project) {
-        window.open(project.html_url, '_blank', 'noopener,noreferrer')
+      const arg = rest.join(' ')
+      const doc = findDocument(arg)
+      const project = doc ? null : findProject(projects, arg)
+      const url = doc?.url || project?.html_url
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer')
       }
     }
     setHistory((h) => [...h, cmd])

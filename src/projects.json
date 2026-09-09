@@ -12,6 +12,9 @@
     "software": "Ali-Abid-Resume-Software.pdf",
     "embedded": "Ali-Abid-Resume-Embedded.pdf"
   },
+  "documents": {
+    "transcript": "files/Unofficial_Transcript.pdf"
+  },
   "exclude": [
     "aliabid0207.github.io",
     "Ap0tato",

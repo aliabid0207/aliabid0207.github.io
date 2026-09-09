@@ -1,0 +1,5 @@
+# Crawlers are welcome on the site itself, but /files/ holds personal
+# documents (transcript) that are linked from the terminal only and
+# should not be indexed.
+User-agent: *
+Disallow: /files/
