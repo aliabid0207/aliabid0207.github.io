@@ -26,7 +26,8 @@
     "Calc",
     "mren178",
     "Sentry-Node",
-    "Bionic-Arm"
+    "Bionic-Arm",
+    "elec290-project"
   ],
   "descriptions": {
     "Bionic-Arm": "Python control code for a bionic/prosthetic arm.",
