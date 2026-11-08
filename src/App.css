@@ -203,12 +203,160 @@ main {
   margin: 0 0 1.25rem;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
+/* ---- Project cube ---- */
+/* The whole page body between nav and footer is the drag surface. */
+.cube-drag {
+  margin: -3rem 0 -4rem;
+  padding: 3rem 0 4rem;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  overflow-x: clip; /* zoomed-in cube must not cause sideways page scroll */
 }
 
+.cube-drag:active {
+  cursor: grabbing;
+}
+
+.cube-wrap {
+  --cube-size: min(75vw, 420px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 0 1rem;
+}
+
+.cube-scene {
+  width: var(--cube-size);
+  height: var(--cube-size);
+  perspective: 1400px;
+}
+
+.cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* Inner tesseract cube size as a fraction of the outer cube; the inner faces
+   and corner edges are all calc()'d from it. */
+.cube {
+  --tess: 0.5;
+}
+
+.tess-edge {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Inner faces reuse .cube-face (full size), shrunk by scale(--tess) inline. */
+.tess-face {
+  opacity: 0.6;
+}
+
+/* A vertical 1px bar centred on the cube's centre; the inline transform lays
+   it along a corner diagonal and slides it out between inner and outer corner. */
+.tess-edge {
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: calc(var(--cube-size) * 0.866 * (1 - var(--tess)));
+  margin-left: -0.5px;
+  margin-top: calc(var(--cube-size) * 0.866 * (1 - var(--tess)) / -2);
+  background: linear-gradient(rgba(120, 220, 255, 0.05), rgba(120, 220, 255, 0.3), rgba(120, 220, 255, 0.05));
+}
+
+/* Holographic faces: translucent, iridescent, glowing edges, see-through. */
+.cube-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  /* Spacing grows with zoom on top of the scale itself, so tiles spread apart. */
+  gap: calc(0.5rem * var(--zoom, 1));
+  padding: calc(0.5rem * var(--zoom, 1));
+  border: 1px solid rgba(120, 220, 255, 0.12);
+  background:
+    repeating-linear-gradient(0deg, rgba(120, 220, 255, 0.06) 0 1px, transparent 1px 4px),
+    linear-gradient(135deg, rgba(88, 166, 255, 0.14), rgba(190, 120, 255, 0.12), rgba(80, 255, 200, 0.12));
+  background-size: 100% 100%, 300% 300%;
+  box-shadow:
+    0 0 14px rgba(88, 200, 255, 0.1),
+    inset 0 0 24px rgba(88, 200, 255, 0.06);
+  animation: holo-shift 6s ease-in-out infinite alternate;
+}
+
+@keyframes holo-shift {
+  from {
+    background-position: 0 0, 0% 50%;
+  }
+  to {
+    background-position: 0 0, 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube-face {
+    animation: none;
+  }
+}
+
+.cube-face .card {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+  background: rgba(13, 17, 23, 0.35);
+  border-color: rgba(120, 220, 255, 0.08);
+  color: #cfefff;
+  text-shadow: 0 0 6px rgba(120, 220, 255, 0.6);
+}
+
+.cube-face .card:hover {
+  transform: none;
+  border-color: rgba(160, 235, 255, 0.3);
+  background: rgba(88, 166, 255, 0.12);
+}
+
+/* Cube tiles show title, image, tags (in that order) — no description. */
+.cube-face .card h3 {
+  order: 0;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.cube-face .card-thumb {
+  order: 1;
+  flex: 1;
+  min-height: 0;
+  margin: 0 0 0.4rem;
+  border: 1px solid rgba(120, 220, 255, 0.08);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.cube-face .card-thumb img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.cube-face .card p {
+  display: none;
+}
+
+.cube-face .card-meta {
+  order: 2;
+  margin-top: auto;
+  color: rgba(200, 235, 255, 0.7);
+}
+
+.cube-face a {
+  -webkit-user-drag: none;
+}
+
+/* ---- Project cards ---- */
 .card {
   display: flex;
   flex-direction: column;
